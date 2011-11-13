@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Portecle repackage" basedir=".">
+  <property name="launch4j.dir" value="launch4j"/>
+  <taskdef name="launch4j"
+    classname="net.sf.launch4j.ant.Launch4jTask"
+    classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
+
+  <target name="onejar">
+    <mkdir dir="build"/>
+    <copy file="portecle-1.7/portecle.jar" toDir="onejar/main" />
+    <copy file="portecle-1.7/bcprov.jar" toDir="onejar/lib" />
+    <jar basedir="onejar" destfile="build/porteclepack.jar" manifest="onejar/META-INF/MANIFEST.MF" />
+  </target>
+  
+  <target name="exe" depends="onejar">
+    <launch4j>
+      <config
+         headerType="gui"
+         outfile="build/portecle.exe"
+         jarPath="build/porteclepack.jar"
+         icon="portecle-1.7/portecle.ico"
+      >
+        <jre minVersion="1.6.0" />
+      </config>
+    </launch4j>
+  </target>
+  
+  <target name="clean">
+    <delete dir="build"/>
+    <delete dir="dist"/>
+    <delete>
+      <fileset dir="onejar/main" includes="*"/>
+      <fileset dir="onejar/lib" includes="*"/>
+    </delete>
+  </target>
+  
+  <target name="dist" depends="exe">
+     <mkdir dir="dist" />
+     <!-- Windows -->
+     <copy file="build/portecle.exe" toDir="dist"/>
+     
+     <!-- Linux -->
+     <mkdir dir="dist/portecle-1.7"/>
+     <copy toDir="dist/portecle-1.7">
+       <fileset dir="distfiles">
+         <include name="portecle"/>
+       </fileset>
+       <fileset dir="portecle-1.7">
+         <include name="portecle.ico"/>
+         <include name="portecle.png"/>
+         <include name="portecle.desktop"/>
+       </fileset>
+       <fileset file="build/porteclepack.jar"/>
+     </copy>
+     
+     <chmod perm="a+x" file="dist/portecle-1.7/portecle"/>
+     <tar destFile="dist/portecle-1.7.tgz" compression="gzip">
+       <tarfileset dir="dist">
+         <include name="portecle-1.7/**/*"/>
+         <exclude name="portecle-1.7/portecle"/>
+       </tarfileset>
+       <tarfileset dir="dist" filemode="755" >
+         <include name="portecle-1.7/portecle"/>
+       </tarfileset>
+     </tar>
+     
+     <delete dir="dist/portecle-1.7"/>
+     
+  </target>
+  
+</project>
+

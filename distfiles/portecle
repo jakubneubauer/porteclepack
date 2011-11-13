@@ -1,0 +1,13 @@
+#!/bin/bash
+MYDIR=$( cd `dirname "$0"`; pwd )
+
+JAVA_BIN=""
+for j in "$JAVA_HOME"/bin/java java ; do
+  if type "$j" > /dev/null; then JAVA_BIN="$j"; break; fi
+done
+if [ "$JAVA_BIN" = "" ]; then
+  echo "Cannot find java either in PATH or JAVA_HOME"
+  exit 1
+fi
+
+"$JAVA_BIN" -jar "$MYDIR"/porteclepack.jar
