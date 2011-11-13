@@ -1,0 +1,38 @@
+body {
+  max-width: 50em;
+  margin: auto;
+  margin-top:1em;
+  padding:1em;
+  border-top:solid 10px #aaa;
+}
+/*
+table td {
+  vertical-align:top;
+  padding: 0 0 2 5;
+}
+*/
+div.description {
+  font-size:80%;
+}
+span.funName {
+  font-size:120%;
+}
+div.funDescription {
+  padding:0 0 0 2em;
+  margin:0;
+}
+div.funDoc {
+  margin-top:1em;
+}
+
+.funDescription p {
+  margin:6pt 0 0 0; padding: 0 0 0 0;
+}
+span.redline {
+  font-weight:bold;
+  color:#ff0000;
+}
+th {
+  text-align:left;
+  padding-bottom:0.5em;
+}
