@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Portecle repackage" basedir=".">
+	
   <property name="launch4j.dir" value="launch4j"/>
+  <property name="appVersion" value="1.7"/>
+  <property name="appJar" value="porteclepack.jar"/>
+  <property name="macAppDir" value="build/portecle-${appVersion}"/>
+	
   <taskdef name="launch4j"
     classname="net.sf.launch4j.ant.Launch4jTask"
     classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
 
   <target name="onejar">
     <mkdir dir="build"/>
-    <copy file="portecle-1.7/portecle.jar" toDir="onejar/main" />
-    <copy file="portecle-1.7/bcprov.jar" toDir="onejar/lib" />
+    <copy file="portecle-${appVersion}/portecle.jar" toDir="onejar/main" />
+    <copy file="portecle-${appVersion}/bcprov.jar" toDir="onejar/lib" />
     <jar basedir="onejar" destfile="build/porteclepack.jar" manifest="onejar/META-INF/MANIFEST.MF" />
   </target>
   
@@ -16,15 +21,37 @@
     <launch4j>
       <config
          headerType="gui"
-         outfile="build/portecle.exe"
+         outfile="build/portecle-${appVersion}.exe"
          jarPath="build/porteclepack.jar"
-         icon="portecle-1.7/portecle.ico"
+         icon="portecle-${appVersion}/portecle.ico"
       >
         <jre minVersion="1.6.0" />
       </config>
     </launch4j>
   </target>
-  
+
+  <target name="dmg">
+    <!-- Create Mac OS X .dmg -->
+    <delete dir="${macAppDir}" />
+    <mkdir dir="${macAppDir}"/>
+    <copy todir="${macAppDir}">
+      <fileset dir="apptemplate">
+        <include name="Portecle.app/**/*"/>
+      </fileset>
+    </copy>
+    <replace file="${macAppDir}/Portecle.app/Contents/Info.plist" token="APPVERSION" value="${appVersion}"/>
+    <chmod perm="a+x" file="${macAppDir}/Portecle.app/Contents/MacOS/Portecle"></chmod>
+    <copy file="build/${appJar}" todir="${macAppDir}/Portecle.app/Contents/Resources/Java"/>
+    <delete file="${macAppDir}.dmg"/>
+    <exec executable="hdiutil">
+      <arg value="create"/>
+      <arg value ="-srcfolder"/>
+      <arg value="${macAppDir}"/>
+      <arg value="${macAppDir}.dmg"/>
+    </exec>
+  	<delete dir="${macAppDir}"/>
+  </target>
+	
   <target name="clean">
     <delete dir="build"/>
     <delete dir="dist"/>
@@ -34,37 +61,40 @@
     </delete>
   </target>
   
-  <target name="dist" depends="exe">
+  <target name="dist" depends="exe,dmg">
      <mkdir dir="dist" />
+     	
      <!-- Windows -->
-     <copy file="build/portecle.exe" toDir="dist"/>
+     <copy file="build/portecle-${appVersion}.exe" toDir="dist"/>
+  	
+  	 <!-- Mac -->
+  	 <copy file="${macAppDir}.dmg" toDir="dist" />
      
      <!-- Linux -->
-     <mkdir dir="dist/portecle-1.7"/>
-     <copy toDir="dist/portecle-1.7">
+     <mkdir dir="dist/portecle-${appVersion}"/>
+     <copy toDir="dist/portecle-${appVersion}">
        <fileset dir="distfiles">
          <include name="portecle"/>
        </fileset>
-       <fileset dir="portecle-1.7">
+       <fileset dir="portecle-${appVersion}">
          <include name="portecle.ico"/>
          <include name="portecle.png"/>
          <include name="portecle.desktop"/>
        </fileset>
        <fileset file="build/porteclepack.jar"/>
      </copy>
-     
-     <chmod perm="a+x" file="dist/portecle-1.7/portecle"/>
-     <tar destFile="dist/portecle-1.7.tgz" compression="gzip">
+     <chmod perm="a+x" file="dist/portecle-${appVersion}/portecle"/>
+     <tar destFile="dist/portecle-${appVersion}.tgz" compression="gzip">
        <tarfileset dir="dist">
-         <include name="portecle-1.7/**/*"/>
-         <exclude name="portecle-1.7/portecle"/>
+         <include name="portecle-${appVersion}/**/*"/>
+         <exclude name="portecle-${appVersion}/portecle"/>
        </tarfileset>
        <tarfileset dir="dist" filemode="755" >
-         <include name="portecle-1.7/portecle"/>
+         <include name="portecle-${appVersion}/portecle"/>
        </tarfileset>
      </tar>
      
-     <delete dir="dist/portecle-1.7"/>
+     <delete dir="dist/portecle-${appVersion}"/>
      
   </target>
   
