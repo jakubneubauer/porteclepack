@@ -10,4 +10,4 @@ if [ "$JAVA_BIN" = "" ]; then
   exit 1
 fi
 
-"$JAVA_BIN" -jar "$MYDIR"/porteclepack.jar
+"$JAVA_BIN" -jar "$MYDIR"/portecle.jar

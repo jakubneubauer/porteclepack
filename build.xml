@@ -3,7 +3,8 @@
 	
   <property name="launch4j.dir" value="launch4j"/>
   <property name="appVersion" value="1.7"/>
-  <property name="appJar" value="porteclepack.jar"/>
+  <property name="appJar1" value="portecle.jar"/>
+  <property name="appJar2" value="bcprov.jar"/>
   <property name="macAppDir" value="build/portecle-${appVersion}"/>
 	
   <taskdef name="launch4j"
@@ -12,20 +13,25 @@
 
   <target name="onejar">
     <mkdir dir="build"/>
-    <copy file="portecle-${appVersion}/portecle.jar" toDir="onejar/main" />
-    <copy file="portecle-${appVersion}/bcprov.jar" toDir="onejar/lib" />
-    <jar basedir="onejar" destfile="build/porteclepack.jar" manifest="onejar/META-INF/MANIFEST.MF" />
+    <copy file="portecle-${appVersion}/portecle.jar" toDir="jarClassLoader/lib" />
+    <copy file="portecle-${appVersion}/bcprov.jar" toDir="jarClassLoader/lib" />
+    <jar basedir="jarClassLoader" destfile="build/porteclepack.jar" manifest="jarClassLoader/META-INF/MANIFEST.MF" />
   </target>
   
-  <target name="exe" depends="onejar">
+  <target name="exe">
+    <mkdir dir="build"/>
     <launch4j>
       <config
          headerType="gui"
-         outfile="build/portecle-${appVersion}.exe"
-         jarPath="build/porteclepack.jar"
+         outfile="build/portecle.exe"
+         jarPath="portecle.jar"
          icon="portecle-${appVersion}/portecle.ico"
+         dontWrapJar="true" chdir="."
       >
         <jre minVersion="1.6.0" />
+        <classPath mainClass="net.sf.portecle.FPortecle">
+          <cp>bcprov.jar</cp>
+        </classPath>
       </config>
     </launch4j>
   </target>
@@ -41,7 +47,8 @@
     </copy>
     <replace file="${macAppDir}/Portecle.app/Contents/Info.plist" token="APPVERSION" value="${appVersion}"/>
     <chmod perm="a+x" file="${macAppDir}/Portecle.app/Contents/MacOS/Portecle"></chmod>
-    <copy file="build/${appJar}" todir="${macAppDir}/Portecle.app/Contents/Resources/Java"/>
+    <copy file="portecle-${appVersion}/${appJar1}" toDir="${macAppDir}/Portecle.app/Contents/Resources/Java" />
+    <copy file="portecle-${appVersion}/${appJar2}" toDir="${macAppDir}/Portecle.app/Contents/Resources/Java" />
     <delete file="${macAppDir}.dmg"/>
     <exec executable="hdiutil">
       <arg value="create"/>
@@ -56,32 +63,47 @@
     <delete dir="build"/>
     <delete dir="dist"/>
     <delete>
-      <fileset dir="onejar/main" includes="*"/>
-      <fileset dir="onejar/lib" includes="*"/>
+      <fileset dir="jarClassLoader/lib" includes="*"/>
     </delete>
   </target>
-  
+
   <target name="dist" depends="exe,dmg">
      <mkdir dir="dist" />
      	
-     <!-- Windows -->
-     <copy file="build/portecle-${appVersion}.exe" toDir="dist"/>
-  	
-  	 <!-- Mac -->
+  </target>
+
+  <target name="mac" depends="dmg">
   	 <copy file="${macAppDir}.dmg" toDir="dist" />
+  </target>
+
+  <target name="windows" depends="exe">
+     <mkdir dir="dist/portecle-${appVersion}" />
+     <copy toDir="dist/portecle-${appVersion}">
+       <fileset dir="build">
+         <include name="portecle.exe"/>
+       </fileset>
+       <fileset dir="portecle-${appVersion}">
+         <include name="${appJar1}"/>
+         <include name="${appJar2}"/>
+       </fileset>
+     </copy>
+     <zip destfile="dist/portecle-${appVersion}.zip" basedir="dist" includes="portecle-${appVersion}/**" compress="true" />
+     <delete dir="dist/portecle-${appVersion}"/>
+  </target>
      
-     <!-- Linux -->
+  <target name="linux">
      <mkdir dir="dist/portecle-${appVersion}"/>
      <copy toDir="dist/portecle-${appVersion}">
        <fileset dir="distfiles">
          <include name="portecle"/>
        </fileset>
        <fileset dir="portecle-${appVersion}">
+         <include name="${appJar1}"/>
+         <include name="${appJar2}"/>
          <include name="portecle.ico"/>
          <include name="portecle.png"/>
          <include name="portecle.desktop"/>
        </fileset>
-       <fileset file="build/porteclepack.jar"/>
      </copy>
      <chmod perm="a+x" file="dist/portecle-${appVersion}/portecle"/>
      <tar destFile="dist/portecle-${appVersion}.tgz" compression="gzip">
